@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Think Gym: Daily Brain Training</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#e6f6f3; --card:#ffffff; --ink:#0e2a35; --muted:#4d6a74; --accent:#0b8f86; --accent-ink:#ffffff;
+  --flame:#f26a1b; --soft:#d8f0ec; --line:#b8dcd6; --ok:#157a4a; --okbg:#e0f6e9; --try:#b5560f; --trybg:#fff0de;
+  --f:#7c3aed; --fi:#ffffff; --a:#b45309; --ai:#ffffff;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b1f26; --card:#14313b; --ink:#eaf6f4; --muted:#9bbcc4; --accent:#4fd1c5; --accent-ink:#06242a;
+    --flame:#ff9a52; --soft:#1a3f4a; --line:#2c5662; --ok:#6fe0a6; --okbg:#173f2e; --try:#ffb273; --trybg:#44301a;
+    --f:#b79cff; --fi:#1d1240; --a:#fbbf24; --ai:#3a2500; color-scheme:dark;
+  }
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font:17px/1.55 "Lexend","Trebuchet MS",system-ui,sans-serif}
+main{max-width:640px;margin:0 auto;padding:24px 16px 56px}
+h1{font-size:clamp(2rem,8.5vw,3rem);line-height:1.08;margin:0 0 8px;font-weight:700;letter-spacing:-.01em}
+h2{font-size:1.25rem;line-height:1.4;margin:0 0 14px;font-weight:600}
+h3{font-size:1rem;margin:0 0 10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+p{margin:0 0 12px}
+.lede{color:var(--muted);margin-bottom:18px}
+.card{background:var(--card);border:3px solid var(--ink);border-radius:20px;padding:20px;box-shadow:0 6px 0 var(--ink)}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.chip{background:var(--card);border:3px solid var(--ink);border-radius:99px;padding:6px 14px;font-weight:600;font-size:.95rem}
+.chip.fire{background:var(--flame);color:#fff;border-color:var(--ink)}
+.levels{display:flex;gap:10px;margin:-6px 0 20px}
+.lv{flex:1;font:inherit;font-weight:600;cursor:pointer;background:var(--card);color:var(--ink);border:3px solid var(--ink);border-radius:14px;padding:10px 6px;font-size:.95rem}
+.lv.on{background:var(--accent);color:var(--accent-ink)}
+.daily{width:100%;font:inherit;text-align:left;cursor:pointer;background:var(--accent);color:var(--accent-ink);border:3px solid var(--ink);border-radius:20px;padding:18px 20px;box-shadow:0 6px 0 var(--ink);margin-bottom:26px;transition:transform .1s,box-shadow .1s}
+.daily:active,.skill:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink)}
+.daily b{display:block;font-size:1.3rem}
+.daily span{font-size:.95rem;opacity:.92}
+.skills{display:grid;gap:12px}
+.skill{font:inherit;text-align:left;cursor:pointer;display:flex;gap:14px;align-items:center;background:var(--card);color:var(--ink);border:3px solid var(--ink);border-radius:18px;padding:12px 16px;box-shadow:0 4px 0 var(--ink);transition:transform .1s,box-shadow .1s}
+.skill:hover{background:var(--soft)}
+.skill .em{font-size:1.9rem;line-height:1}
+.skill b{display:block}
+.skill small{color:var(--muted)}
+button:focus-visible{outline:4px solid var(--flame);outline-offset:3px}
+.dots{display:flex;gap:8px;justify-content:center;margin-bottom:14px}
+.dot{width:16px;height:16px;border-radius:50%;border:3px solid var(--ink);background:var(--card)}
+.dot.now{background:var(--flame)} .dot.ok{background:var(--ok)} .dot.try{background:var(--try)}
+.meta{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:14px}
+.tag{font-weight:600;color:var(--accent)}
+.say{font:inherit;cursor:pointer;background:var(--soft);color:var(--ink);border:2px solid var(--ink);border-radius:99px;padding:4px 14px;font-size:.9rem}
+.passage{background:var(--soft);border-left:6px solid var(--accent);border-radius:4px 14px 14px 4px;padding:14px 16px;margin-bottom:16px;line-height:1.75}
+.think{color:var(--muted);font-size:.9rem;margin:-6px 0 14px}
+.opts{display:grid;gap:12px;margin:0;padding:0;list-style:none}
+.opt{width:100%;font:inherit;text-align:left;cursor:pointer;display:flex;gap:12px;align-items:center;background:var(--card);color:var(--ink);border:3px solid var(--line);border-radius:14px;padding:13px 15px;min-height:56px;transition:transform .1s,border-color .1s}
+.opt:hover:not(:disabled){border-color:var(--accent);background:var(--soft)}
+.opt:active:not(:disabled){transform:scale(.98)}
+.opt .k{flex:none;width:32px;height:32px;border-radius:10px;background:var(--ink);color:var(--card);display:grid;place-items:center;font-weight:700;font-size:.9rem}
+.opt:disabled{cursor:default}
+.opt.ok{border-color:var(--ok);background:var(--okbg)}
+.opt.try{border-color:var(--try);background:var(--trybg)}
+.opt.dim{opacity:.55}
+.fb{margin-top:16px;padding:14px 16px;border-radius:14px;border:3px solid var(--line)}
+.fb.ok{border-color:var(--ok);background:var(--okbg)} .fb.try{border-color:var(--try);background:var(--trybg)}
+.fb strong{display:block;font-size:1.1rem;margin-bottom:4px}
+.btn{font:inherit;font-weight:600;font-size:1.05rem;cursor:pointer;background:var(--accent);color:var(--accent-ink);border:3px solid var(--ink);border-radius:99px;padding:12px 26px;box-shadow:0 4px 0 var(--ink);transition:transform .1s,box-shadow .1s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn.ghost{background:var(--card);color:var(--ink)}
+.row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+.center{text-align:center}
+.stars{font-size:2.8rem;letter-spacing:6px;margin:4px 0}
+.off{opacity:.25;filter:grayscale(1)}
+.score{font-size:1.3rem;font-weight:600;margin-bottom:6px}
+.break{display:grid;gap:10px;margin:16px 0;text-align:left}
+.habit{text-align:left;background:var(--soft);border:3px dashed var(--accent);border-radius:16px;padding:14px 16px;margin-top:14px}
+.rev{text-align:left;margin-top:18px;border-top:3px dashed var(--line);padding-top:12px}
+.rev li{margin-bottom:12px}
+.rev small{display:block;color:var(--muted)}
+.pc0{color:var(--f)} .pc1{color:var(--a)}
+.dots.duo{flex-direction:column;align-items:flex-start;gap:6px}
+.pd{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.pd b{min-width:64px;font-size:.88rem}
+.pd .dot{width:13px;height:13px}
+.prow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:3px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:12px}
+.prow.done{background:var(--soft)}
+.pname{font-weight:700;min-width:70px}
+.p0 .pname{color:var(--f)} .p1 .pname{color:var(--a)}
+.pbtns{display:flex;gap:8px;flex:1;justify-content:flex-end}
+.pb{font:inherit;font-weight:700;cursor:pointer;width:52px;height:48px;border-radius:12px;border:3px solid var(--ink);background:var(--card);color:var(--ink)}
+.p0 .pb:hover,.p0 .pb:active{background:var(--f);color:var(--fi)}
+.p1 .pb:hover,.p1 .pb:active{background:var(--a);color:var(--ai)}
+.plock{font-weight:600}
+.drow{display:grid;grid-template-columns:1fr 62px 62px;gap:8px;align-items:center;font-size:.92rem;text-align:left}
+.drow.h{font-weight:700}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <section id="start">
+    <h1>Think Gym 💪</h1>
+    <p class="lede">Train your brains together. Each of you taps your own letter. Answers stay hidden until you both choose.</p>
+    <div class="levels" id="who" style="margin:0 0 14px"></div>
+    <div class="stats" id="stats"></div>
+    <button class="daily" id="daily" type="button"></button>
+    <h3>Train one skill</h3>
+    <div class="skills" id="skills"></div>
+    <div id="recent" hidden></div>
+  </section>
+
+  <section id="quiz" hidden>
+    <div class="dots" id="dots" aria-hidden="true"></div>
+    <div class="meta"><span class="tag" id="qtag"></span><button class="say" id="say" type="button">🔊 Read aloud</button></div>
+    <div class="card">
+      <div class="passage" id="passage" hidden></div>
+      <h2 id="qtext"></h2>
+      <p class="think">💭 Think first. Both choose, then answers reveal.</p>
+      <ul class="opts" id="opts"></ul>
+      <div id="duo" hidden></div>
+      <div class="fb" id="fb" role="status" aria-live="polite" hidden></div>
+      <div class="row"><button class="btn" id="next" hidden></button></div>
+    </div>
+  </section>
+
+  <section id="result" hidden>
+    <div class="card center">
+      <h2 id="rtitle"></h2>
+      <div class="stars" id="stars" aria-hidden="true"></div>
+      <div class="score" id="score"></div>
+      <p id="streakmsg" class="lede"></p>
+      <div class="break" id="break"></div>
+      <div class="habit" id="habit"></div>
+      <div class="row" style="justify-content:center">
+        <button class="btn" id="home">Back to the gym</button>
+      </div>
+      <div class="rev" id="rev"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+var NAMES=["Fatima","Awais"];
+var duo=true;
+try{duo=localStorage.getItem("thinkgym-who")!=="solo"}catch(e){}
+
+var SK=[
+ {id:"logic",n:"Logic Lab",em:"🧠",b:"Clues, patterns and what must be true",tip:"Write down what you know. Then ask: what must be true?"},
+ {id:"real",n:"Fix-It Thinking",em:"🛠️",b:"Plans and problems from real life",tip:"Break a big problem into small steps. Do the first step."},
+ {id:"ai",n:"AI Smart",em:"🤖",b:"Use AI well and check its answers",tip:"AI is a helper, not a boss. Ask clearly, then check the answer."},
+ {id:"read",n:"Read Like a Detective",em:"🔍",b:"Find proof, facts and word meanings",tip:"Go back to the text and find proof for your answer."},
+ {id:"num",n:"Number Sense",em:"📏",b:"Estimate, compare and solve in steps",tip:"Guess roughly first. Then work out the exact answer."}
+];
+
+/* Format: [skill, question, [opts], correctIndex, explanation, passage?] */
+var RAW=[
+/* ===== LOGIC (15) ===== */
+["logic","All cats like milk. Kitty is a cat. What do we know?",["Kitty likes milk","Kitty is black","Kitty is big","Kitty hates milk"],0,"All cats like milk, and Kitty is a cat. So Kitty likes milk."],
+["logic","What comes next? 2, 4, 6, 8, ?",["9","10","12","14"],1,"The numbers go up by 2 each time. 8 + 2 = 10."],
+["logic","Which one does not belong? Circle, Square, Triangle, Banana",["Circle","Square","Triangle","Banana"],3,"Circle, square and triangle are shapes. A banana is a fruit."],
+["logic","What comes next? 5, 10, 15, ?",["16","18","20","25"],2,"The numbers go up by 5. 15 + 5 = 20."],
+["logic","Which one does not belong? Apple, Mango, Carrot, Banana",["Apple","Mango","Carrot","Banana"],2,"Apple, mango and banana are fruits. A carrot is a vegetable."],
+["logic","Tom is before Ana in line. Who is first?",["Tom","Ana","Both","We cannot tell"],0,"Tom comes before Ana, so Tom is first."],
+["logic","All birds have wings. Robin is a bird. What do we know?",["Robin has wings","Robin can sing","Robin is red","Robin is big"],0,"All birds have wings. Robin is a bird, so Robin has wings."],
+["logic","What comes next? A, B, A, B, ?",["A","B","C","D"],0,"The pattern repeats A, B, A, B. Next is A."],
+["logic","Raj is taller than Sam. Who is shorter?",["Raj","Sam","Both","We cannot tell"],1,"If Raj is taller, then Sam is shorter."],
+["logic","All dogs in the park wear red collars. Bruno is a dog in the park. What must be true?",["Bruno wears a red collar","Bruno is big","Bruno likes the park","Bruno is brown"],0,"The rule says all dogs in the park wear red collars. Bruno is one of them."],
+["logic","Mia is taller than Sam. Sam is taller than Raj. Who is the shortest?",["Mia","Sam","Raj","They are the same"],2,"Order from tallest: Mia, Sam, Raj. Raj is the shortest."],
+["logic","What comes next? 1, 2, 4, 8, 16, ?",["24","30","32","20"],2,"Each number is double the one before. Double 16 is 32."],
+["logic","If it rains, the match is cancelled. The match was NOT cancelled. What do we know?",["It rained","It did not rain","It was very sunny","The players were late"],1,"If it had rained, the match would be cancelled. It was not, so it did not rain."],
+["logic","Pia has more marbles than Leo. Leo has more than Zed. Pia has 20 and Zed has 8. Which number could Leo have?",["5","8","15","25"],2,"Leo must be more than 8 and less than 20. Only 15 fits."],
+["logic","Ana, Ben and Cy each have a different pet: dog, cat or fish. Ben has the fish. Ana does not have the cat. Who has the dog?",["Ana","Ben","Cy","We cannot tell"],0,"Ben has the fish. Ana does not have the cat, so Ana has the dog. Cy has the cat."],
+
+/* ===== REAL LIFE (15) ===== */
+["real","You have 10 sweets and share them equally with 1 friend. How many does each get?",["2","5","8","10"],1,"Two people share 10 sweets: 10 ÷ 2 = 5."],
+["real","It is cold and rainy outside. What should you wear?",["A raincoat and warm clothes","Shorts and sandals","Only sunglasses","Nothing"],0,"A raincoat keeps you dry and warm clothes keep you warm."],
+["real","You cannot find your school bag. What is the best first step?",["Think where you last had it and look there","Cry and do nothing","Blame your friend","Buy a new bag"],0,"Good problem solvers start with what they know: where did you last see it?"],
+["real","Buses come every 15 minutes: 3:00, 3:15, 3:30. You reach the stop at 3:20. How long do you wait?",["5 minutes","10 minutes","15 minutes","20 minutes"],1,"The next bus after 3:20 is at 3:30. That is 10 minutes."],
+["real","A class has 26 children. One table seats 4 children. How many tables do you need?",["6","7","8","26"],1,"6 tables seat 24, so 2 are left. You need one more table: 7."],
+["real","A cake for 2 people needs 3 eggs. How many eggs for 6 people?",["6","9","12","18"],1,"6 people is 3 times as many as 2. So 3 × 3 = 9 eggs."],
+["real","The trip bus leaves at 9:30. You need 10 minutes to walk and 5 minutes for shoes. When should you start getting ready?",["9:10","9:15","9:20","9:25"],1,"10 + 5 = 15 minutes. 15 minutes before 9:30 is 9:15."],
+["real","You have 100 coins. You buy 2 pens at 15 coins each and a notebook for 40. How many coins are left?",["25","30","45","55"],1,"2 pens cost 30. Plus 40 is 70. 100 − 70 = 30."],
+["real","Your tablet battery is at 20% and you have a long trip. What is the smartest first step?",["Turn on battery saver and dim the screen","Play the loudest game","Hope for the best","Close the car windows"],0,"Use what you have. Battery saver and dim screen help it last longer."],
+["real","Three friends share 9 cookies equally. How many does each get?",["2","3","4","9"],1,"9 ÷ 3 = 3."],
+["real","You need 30 minutes to get ready. You wake up at 7:00. When are you ready?",["7:15","7:30","7:45","8:00"],1,"7:00 plus 30 minutes is 7:30."],
+["real","There are 4 chairs and 6 people. How many more chairs do you need?",["1","2","3","4"],1,"6 people need 6 chairs. You have 4, so you need 2 more."],
+["real","A book has 60 pages. You read 25. How many pages are left?",["25","30","35","45"],2,"60 − 25 = 35."],
+["real","You have 6 eggs and use 2. How many are left?",["2","3","4","6"],2,"6 − 2 = 4."],
+["real","You leave home at 7:45. The drive is 25 minutes, then a 15-minute walk. When do you arrive?",["8:15","8:20","8:25","8:30"],2,"7:45 + 25 min = 8:10. + 15 min = 8:25."],
+
+/* ===== AI SMART (15) ===== */
+["ai","A robot helper does exactly what you say. Which instruction is clearest?",["Make lunch","Put cheese between two slices of bread","Do the food thing","Use bread"],1,"Robots need clear steps. The more exact your words, the better the result."],
+["ai","A computer answers very fast. Is it always right?",["No, it can make mistakes","Yes, always","Yes, if it is loud","Only on Mondays"],0,"Computers and AI can make mistakes, even when they sound sure."],
+["ai","Which is a good way to use an AI helper?",["Ask it to explain something you want to learn","Let it do all your thinking","Believe everything it says","Tell it where you live"],0,"AI can help you learn. But you still need to think and check."],
+["ai","An AI helper says, “The Moon is made of cheese.” What should you do?",["Believe it, because computers are never wrong","Check a trusted book or website","Tell everyone at once","Ask it again, louder"],1,"AI can be wrong. Check important facts in a trusted source."],
+["ai","You want to learn about octopuses. Which question will get the best answer?",["Tell me stuff","Animals","Tell me three fun facts about octopuses for a 9-year-old","Octopus??"],2,"A good question says what you want, how many, and who it is for."],
+["ai","A chat app asks for your full name, school and home address. What should you do?",["Type it in, it is friendly","Do not share private things. Ask a parent or teacher","Share only your address","Share it with everyone"],1,"Keep private things private. Ask a trusted grown-up first."],
+["ai","An AI says 7 × 8 = 54. How can you check it?",["Work it out: 7 × 4 = 28, then double it","Believe it. AI is good at maths","Ask it to say it louder","Guess"],0,"7 × 4 = 28, and double is 56. So the AI was wrong. Always check."],
+["ai","An AI's answer is too long. What is the smartest thing to do?",["Ask again: “Please answer in 3 short sentences”","Give up","Read it ten times","Say nothing"],0,"You can get a better answer by asking again with clearer instructions."],
+["ai","A computer learns to find cats from photos. You only show it black cats. What mistake might it make?",["It may think white cats are not cats","It will learn to fly","It will turn into a dog","Nothing. It knows everything"],0,"AI learns from the examples it gets. If the examples are all the same, it can miss other kinds."],
+["ai","A website asks for your password. What should you do?",["Never share it. Ask a parent","Type it quickly","Share it with friends","Post it online"],0,"Passwords are private. Never share them."],
+["ai","You see something surprising on the internet. What should you do?",["Tell a grown-up you trust","Believe it at once","Share it with everyone","Ignore all news forever"],0,"Ask a trusted grown-up before believing or sharing."],
+["ai","Which of these is private information?",["Your favourite colour","Your home address","Your favourite game","Your pet's name"],1,"Your home address is private. Keep it safe."],
+["ai","Which of these can a robot NOT do?",["Add numbers","Feel happy","Follow instructions","Repeat words"],1,"Robots can calculate and follow instructions, but they do not have feelings."],
+["ai","Which is the best prompt for learning about gravity?",["Gravity","Explain gravity for a 9-year-old in 3 short sentences","Stuff about gravity","Why"],1,"Specific prompts get specific answers."],
+["ai","An AI recommends a video for you. Is it always good for you?",["Yes, AI picks the best","No, check with a parent first","Yes, if it is popular","Only if it is short"],1,"Recommendations are guesses. A parent should check."],
+
+/* ===== READ (15) ===== */
+["read","What colour is Sam's kite?",["Blue","Red","Green","Yellow"],1,"The passage says Sam has a red kite.","Sam has a red kite. He flies it at the park on windy days."],
+["read","What did Rita do first?",["Went to school","Fed the fish","Watched TV","Went to bed"],1,"She fed the fish first, then went to school.","Rita fed the fish in the morning. Then she went to school."],
+["read","Which sentence is a fact?",["The sun is a star","Rain is boring","Red is the best colour","Dogs are scary"],0,"A fact can be checked and proven. The others are feelings."],
+["read","What is this passage mostly about?",["Ants eat sugar","Ants work as a team","Ants are big","Ants like rain"],1,"Every ant has a job. The big idea is teamwork.","Ants work as a team. Some find food. Some carry it home. Some guard the nest."],
+["read","What can you guess from this?",["It looked like rain","Dev was going swimming","It was a hot desert","Dev was sleepy"],0,"A raincoat, boots and an umbrella are clues that rain was coming.","Dev put on his raincoat and boots. He took an umbrella before he left."],
+["read","What does “tiny” mean here?",["Very small","Very loud","Very fast","Very hungry"],0,"If a puppy can sleep inside a shoe, it must be very small.","The puppy was so tiny that it could sleep inside a shoe."],
+["read","What is the most likely reason the plant looked sick?",["It needed water","It had too much water","It was too cold","It was too happy"],0,"The soil was dry and cracked, and Kay said it looked thirsty.","Mina put her plant near the window. After a week its leaves turned yellow and the soil was dry and cracked. Her friend Kay said, “It looks thirsty.”"],
+["read","What do tadpoles have that grown frogs do not?",["Tails and gills","Legs","Eyes","Skin"],0,"The passage says tadpoles have tails and gills, then lose their tails.","Frogs start life in water as tadpoles. They have tails and gills. Later they grow legs, lose their tails, and can live on land."],
+["read","A writer says, “Pizza is the best food.” How can you tell it is an opinion?",["People can feel differently about it","It has the word pizza","It is short","It is true"],0,"“Best” is a feeling. Different people like different foods."],
+["read","Where did the cat sit?",["On the mat","On the bed","On the chair","On the table"],0,"The passage says the cat sat on the mat.","The cat sat on the mat. It was sleepy."],
+["read","How many dogs does Ali have?",["1","2","3","4"],1,"The passage says Ali has 2 dogs.","Ali has 2 dogs. Both are brown."],
+["read","Why did Maya take an umbrella?",["It was raining","It was sunny","She liked the colour","Her friend asked"],0,"The passage says it was raining, so she took an umbrella.","It was raining. Maya took her umbrella."],
+["read","Which sentence is an opinion?",["Winter is the best season","Water freezes at 0°C","The Earth goes around the Sun","Birds have feathers"],0,"“Best” is a feeling. The others are facts."],
+["read","Why did everyone whisper?",["The library was quiet","They were angry","They were sleepy","They lost their voices"],0,"Libraries are quiet places, so people whisper.","The library was quiet. Everyone whispered."],
+["read","Which sentence uses “sharp” to mean clever?",["She has a sharp mind","The knife is sharp","The turn was sharp","The pain was sharp"],0,"“A sharp mind” means a clever mind. The other uses are about edges, turns or pain."],
+
+/* ===== NUMBER SENSE (15) ===== */
+["num","Mia has 8 stickers and gets 5 more. How many now?",["12","13","14","3"],1,"8 + 5 = 13."],
+["num","There are 3 plates with 2 cookies each. How many cookies?",["5","6","8","32"],1,"3 groups of 2 is 3 × 2 = 6."],
+["num","What time is it 1 hour after 3:00?",["2:00","3:30","4:00","5:00"],2,"One hour after 3:00 is 4:00."],
+["num","Ria reads 12 pages a day. How many in one week?",["72","84","96","19"],1,"12 × 7 = 84. Tip: 10 × 7 = 70, 2 × 7 = 14, then add."],
+["num","About how long is a school bus?",["10 centimetres","10 metres","100 metres","1 kilometre"],1,"A bus is much longer than a desk but shorter than a football pitch. About 10 metres."],
+["num","A pizza has 8 slices. Mia eats 3. What fraction is left?",["3/8","5/8","5/3","1/2"],1,"8 − 3 = 5 slices left. That is 5/8."],
+["num","Pack A has 6 pens for 30 coins. Pack B has 10 pens for 45 coins. Which costs less per pen?",["Pack A","Pack B","They cost the same","We cannot tell"],1,"Pack A: 30 ÷ 6 = 5 coins each. Pack B: 45 ÷ 10 = 4.5 coins each. Pack B is cheaper."],
+["num","A movie starts at 4:20 and lasts 1 hour 50 minutes. When does it end?",["5:70","6:00","6:10","6:30"],2,"4:20 + 1 hour = 5:20. + 40 min = 6:00. + 10 min = 6:10."],
+["num","A box holds 12 eggs. You need 40 eggs. How many boxes must you buy?",["3","4","5","6"],1,"3 boxes hold 36, which is not enough. 4 boxes hold 48. So 4."],
+["num","What is 4 × 6?",["20","22","24","26"],2,"4 × 6 = 24."],
+["num","What is 100 − 37?",["63","67","73","77"],0,"100 − 37 = 63."],
+["num","What is 25 × 4?",["75","90","100","125"],2,"25 × 4 = 100."],
+["num","What is 3/4 of 20?",["10","12","15","18"],2,"20 ÷ 4 = 5. 5 × 3 = 15."],
+["num","A class starts at 12:15 and ends at 1:45. How long is it?",["1 hour","1 hour 15 minutes","1 hour 30 minutes","1 hour 45 minutes"],2,"12:15 to 1:15 is 1 hour. 1:15 to 1:45 is 30 minutes. Total 1 hour 30 minutes."],
+["num","What is the average of 10, 20 and 30?",["15","20","25","30"],1,"10 + 20 + 30 = 60. 60 ÷ 3 = 20."]
+];
+
+var Q=RAW.map(function(r){return {s:r[0],q:r[1],o:r[2],a:r[3],e:r[4],p:r[5]}});
+
+var $=function(id){return document.getElementById(id)};
+var LET=["A","B","C","D"];
+var CHEERS=["Great thinking!","Awesome!","You got it!","Sharp mind!","Brilliant!"];
+var state={mode:null,list:[],i:0,score:0,score2:[0,0],answers:[],done:false,pick:[null,null],duo:true};
+
+function loadD(){var d={streak:0,best:0,last:"",xp:[0,0],hist:[]};try{var r=JSON.parse(localStorage.getItem("thinkgym-duo")||"null");if(r)for(var k in d)if(r[k]!==undefined)d[k]=r[k]}catch(e){}return d}
+function saveD(d){try{localStorage.setItem("thinkgym-duo",JSON.stringify(d))}catch(e){}}
+function ds(t){var d=new Date(t);return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
+function today(){return ds(Date.now())}
+function dayNum(){var n=new Date();return Math.floor(new Date(n.getFullYear(),n.getMonth(),n.getDate(),12).getTime()/864e5)}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function bank(id){return Q.filter(function(q){return q.s===id})}
+function sk(id){return SK.filter(function(s){return s.id===id})[0]}
+function show(id){["start","quiz","result"].forEach(function(s){$(s).hidden=(s!==id)});stopSay();window.scrollTo(0,0)}
+function stopSay(){if(window.speechSynthesis){try{speechSynthesis.cancel()}catch(e){}}}
+
+function home(){
+  var d=loadD(),doneToday=d.last===today();
+  var wh=$("who");wh.innerHTML="";
+  [[true,"🟣🟠 Fatima & Awais"],[false,"One player"]].forEach(function(w){
+    var b=document.createElement("button");b.type="button";b.className="lv"+(w[0]===duo?" on":"");
+    b.textContent=w[1];b.setAttribute("aria-pressed",w[0]===duo);
+    b.onclick=function(){duo=w[0];try{localStorage.setItem("thinkgym-who",duo?"duo":"solo")}catch(e){}home()};wh.appendChild(b);
+  });
+  var live=(d.last===today()||d.last===ds(Date.now()-864e5))?d.streak:0;
+  $("stats").innerHTML="";
+  (duo?[["fire","🔥 "+live+" day streak"],["","🟣 Fatima ⭐ "+d.xp[0]],["","🟠 Awais ⭐ "+d.xp[1]]]:[["fire","🔥 "+live+" day streak"],["","⭐ "+d.xp[0]+" stars"],["","🏆 Best "+d.best]]).forEach(function(c){
+    var x=document.createElement("span");x.className="chip "+c[0];x.textContent=c[1];$("stats").appendChild(x);
+  });
+  $("daily").innerHTML="<b></b><span></span>";
+  $("daily").children[0].textContent=doneToday?"✅ Done for today!":"▶ Today’s Challenge";
+  $("daily").children[1].textContent=(doneToday?"Great work! Play again for extra practice. ":"5 questions, one from each skill. ")+(duo?"You both need 4 right to win the streak bonus.":"Get 4 right to earn a bonus star.");
+  var box=$("skills");box.innerHTML="";
+  SK.forEach(function(s){
+    var b=document.createElement("button");b.className="skill";b.type="button";
+    b.innerHTML='<span class="em"></span><span><b></b><small></small></span>';
+    b.querySelector(".em").textContent=s.em;b.querySelector("b").textContent=s.n;b.querySelector("small").textContent=s.b;
+    b.onclick=function(){start(s.id)};box.appendChild(b);
+  });
+  var rc=$("recent");rc.innerHTML="";rc.hidden=!(duo&&d.hist&&d.hist.length);
+  if(!rc.hidden){
+    var h3=document.createElement("h3");h3.textContent="Recent scores";h3.style.marginTop="26px";rc.appendChild(h3);
+    d.hist.slice(-5).reverse().forEach(function(x){
+      var r=document.createElement("div");r.className="drow";
+      r.style.cssText="grid-template-columns:1fr auto auto;padding:6px 0;border-bottom:2px dashed var(--line)";
+      r.innerHTML='<span></span><b class="pc0"></b><b class="pc1"></b>';
+      r.children[0].textContent=x.t+" · "+x.m;
+      r.children[1].textContent="Fatima "+x.f+"/"+x.n;r.children[2].textContent="Awais "+x.a+"/"+x.n;
+      rc.appendChild(r);
+    });
+  }
+  show("start");
+}
+
+function start(mode){
+  state.mode=mode;state.duo=duo;state.i=0;state.score=0;state.score2=[0,0];state.answers=[];state.pick=[null,null];
+  var pool;
+  if(mode==="daily"){
+    var n=dayNum();
+    pool=SK.map(function(s,i){var b=bank(s.id);return b[(n+i)%b.length]});
+  } else {
+    pool=shuffle(bank(mode)).slice(0,5);
+  }
+  state.list=pool.map(function(q){
+    var order=shuffle([0,1,2,3]);
+    return {s:q.s,p:q.p,q:q.q,e:q.e,o:order.map(function(i){return q.o[i]}),a:order.indexOf(q.a)};
+  });
+  show("quiz");render();
+}
+
+function dots(){
+  var d=$("dots");d.innerHTML="";d.className="dots"+(state.duo?" duo":"");
+  (state.duo?[0,1]:[-1]).forEach(function(p){
+    var row=document.createElement("div");row.className="pd";
+    if(p>=0){var nm=document.createElement("b");nm.textContent=NAMES[p];nm.className="pc"+p;row.appendChild(nm)}
+    state.list.forEach(function(_,i){
+      var s=document.createElement("span");s.className="dot";
+      if(i<state.answers.length){var r=state.answers[i].right;s.classList.add((p>=0?r[p]:r)?"ok":"try")}
+      else if(i===state.i)s.classList.add("now");
+      row.appendChild(s);
+    });
+    d.appendChild(row);
+  });
+}
+
+function render(){
+  var q=state.list[state.i],s=sk(q.s);
+  dots();
+  $("qtag").textContent=s.em+" "+s.n+" · "+(state.i+1)+"/"+state.list.length;
+  var ps=$("passage");if(q.p){ps.textContent=q.p;ps.hidden=false}else{ps.textContent="";ps.hidden=true}
+  $("qtext").textContent=q.q;
+  var ul=$("opts");ul.innerHTML="";
+  q.o.forEach(function(txt,idx){
+    var li=document.createElement("li"),b=document.createElement("button");
+    b.className="opt";b.type="button";
+    b.innerHTML='<span class="k">'+LET[idx]+'</span><span></span>';
+    b.lastChild.textContent=txt;
+    if(state.duo){b.disabled=true}else{b.onclick=function(){answer(idx)}}
+    li.appendChild(b);ul.appendChild(li);
+  });
+  $("fb").hidden=true;$("next").hidden=true;state.done=false;state.pick=[null,null];
+  buildDuo();
+  $("say").hidden=!window.speechSynthesis;
+}
+
+$("say").onclick=function(){
+  if(!window.speechSynthesis)return;
+  var q=state.list[state.i];stopSay();
+  var t=(q.p?q.p+" ":"")+q.q;
+  if(!state.done)t+=" "+q.o.map(function(o,i){return LET[i]+". "+o}).join(". ");
+  try{speechSynthesis.speak(new SpeechSynthesisUtterance(t))}catch(e){}
+};
+
+function answer(idx){
+  if(state.done)return;state.done=true;stopSay();
+  var q=state.list[state.i],right=idx===q.a;
+  if(right)state.score++;
+  state.answers.push({q:q,picked:idx,right:right});
+  $("opts").querySelectorAll(".opt").forEach(function(b,i){
+    b.disabled=true;
+    if(i===q.a)b.classList.add("ok");else if(i===idx)b.classList.add("try");else b.classList.add("dim");
+  });
+  dots();
+  var fb=$("fb");fb.className="fb "+(right?"ok":"try");
+  fb.innerHTML="<strong></strong><span></span>";
+  fb.children[0].textContent=right?("⭐ "+CHEERS[Math.floor(Math.random()*CHEERS.length)]):("Good try! The answer is "+LET[q.a]+".");
+  fb.children[1].textContent=q.e;fb.hidden=false;
+  var nx=$("next");nx.textContent=(state.i===state.list.length-1)?"See my results":"Next question";
+  nx.hidden=false;nx.focus();
+}
+$("next").onclick=function(){if(state.i<state.list.length-1){state.i++;render()}else finish()};
+
+function setRow(p,txt,color){
+  var row=$("prow"+p);row.innerHTML="";row.classList.add("done");
+  var nm=document.createElement("span");nm.className="pname";nm.textContent=NAMES[p];row.appendChild(nm);
+  var l=document.createElement("span");l.className="plock";l.textContent=txt;if(color)l.style.color=color;row.appendChild(l);
+}
+function buildDuo(){
+  var box=$("duo");box.innerHTML="";box.hidden=!state.duo;
+  if(!state.duo)return;
+  var hint=document.createElement("p");hint.className="think";hint.style.marginTop="16px";
+  hint.textContent="Each of you taps your own letter. Answers stay hidden until you both choose.";box.appendChild(hint);
+  [0,1].forEach(function(p){
+    var row=document.createElement("div");row.className="prow p"+p;row.id="prow"+p;
+    var nm=document.createElement("span");nm.className="pname";nm.textContent=NAMES[p];row.appendChild(nm);
+    var bs=document.createElement("div");bs.className="pbtns";
+    state.list[state.i].o.forEach(function(_,k){
+      var b=document.createElement("button");b.type="button";b.className="pb";b.textContent=LET[k];
+      b.setAttribute("aria-label",NAMES[p]+" chooses "+LET[k]);
+      b.onclick=function(){pick(p,k)};bs.appendChild(b);
+    });
+    row.appendChild(bs);box.appendChild(row);
+  });
+}
+function pick(p,k){
+  if(state.done||state.pick[p]!==null)return;
+  state.pick[p]=k;setRow(p,"🔒 Answer locked in");
+  if(state.pick[0]!==null&&state.pick[1]!==null)revealDuo();
+}
+function revealDuo(){
+  state.done=true;stopSay();
+  var q=state.list[state.i],r=[0,1].map(function(p){return state.pick[p]===q.a});
+  r.forEach(function(x,p){if(x)state.score2[p]++});
+  state.answers.push({q:q,picked:state.pick.slice(),right:r});
+  $("opts").querySelectorAll(".opt").forEach(function(b,i){b.classList.add(i===q.a?"ok":"dim")});
+  [0,1].forEach(function(p){setRow(p,(r[p]?"✅ Correct ":"❌ Not quite ")+"(chose "+LET[state.pick[p]]+")",r[p]?"var(--ok)":"var(--try)")});
+  dots();
+  var both=r[0]&&r[1],fb=$("fb");fb.className="fb "+(both?"ok":"try");
+  fb.innerHTML="<strong></strong><span></span>";
+  fb.children[0].textContent=both?"⭐ You both got it! Great teamwork!":(r[0]||r[1]?"One of you got it. The answer is "+LET[q.a]+".":"Good try, both of you! The answer is "+LET[q.a]+".");
+  fb.children[1].textContent=q.e;fb.hidden=false;
+  var nx=$("next");nx.textContent=(state.i===state.list.length-1)?"See our results":"Next question";
+  nx.hidden=false;nx.focus();
+}
+function finishDuo(){
+  var n=state.list.length,sc=state.score2,d=loadD(),msg="";
+  d.xp[0]+=sc[0];d.xp[1]+=sc[1];
+  if(state.mode==="daily"){
+    if(d.last!==today()){
+      d.streak=(d.last===ds(Date.now()-864e5))?d.streak+1:1;
+      d.last=today();if(d.streak>d.best)d.best=d.streak;
+      msg="🔥 "+d.streak+(d.streak===1?" day streak! Come back tomorrow.":" days in a row. Keep going!");
+    } else msg="Today’s streak is already won. This was extra practice!";
+    if(sc[0]>=4&&sc[1]>=4)msg+=" 🌟 Bonus star each for scoring 4+.";
+  } else msg="Practice earns stars. Do Today’s Challenge to grow your streak.";
+  d.hist=(d.hist||[]).concat([{t:today(),m:state.mode==="daily"?"Daily":sk(state.mode).n,f:sc[0],a:sc[1],n:n}]).slice(-8);
+  saveD(d);
+  $("rtitle").textContent=(sc[0]>=n*0.8&&sc[1]>=n*0.8)?"Amazing teamwork! 🎉":"Well done, both of you! 👏";
+  var st=$("stars");st.innerHTML="";
+  [0,1].forEach(function(p){
+    var r=document.createElement("div");r.style.cssText="font-size:1.6rem;letter-spacing:4px";
+    var got=sc[p]/n>=0.8?3:sc[p]/n>=0.5?2:1;
+    var nm=document.createElement("span");nm.className="pc"+p;
+    nm.style.cssText="font-size:1rem;letter-spacing:0;font-weight:700;display:inline-block;min-width:84px;text-align:left";
+    nm.textContent=NAMES[p];r.appendChild(nm);
+    for(var i=1;i<=3;i++){var sp=document.createElement("span");sp.textContent="⭐";if(i>got)sp.className="off";r.appendChild(sp)}
+    st.appendChild(r);
+  });
+  $("score").textContent=NAMES[0]+" "+sc[0]+"/"+n+"  ·  "+NAMES[1]+" "+sc[1]+"/"+n;
+  $("streakmsg").textContent=msg;
+  var tally={};
+  state.answers.forEach(function(a){var t=a.q.s;tally[t]=tally[t]||{n:0,r:[0,0]};tally[t].n++;a.right.forEach(function(x,p){if(x)tally[t].r[p]++})});
+  var br=$("break");br.innerHTML="";
+  var h=document.createElement("div");h.className="drow h";h.innerHTML="<span></span><span></span><span></span>";
+  h.children[1].textContent=NAMES[0];h.children[1].className="pc0";h.children[2].textContent=NAMES[1];h.children[2].className="pc1";br.appendChild(h);
+  Object.keys(tally).forEach(function(t){
+    var x=tally[t],row=document.createElement("div");row.className="drow";row.innerHTML="<span></span><span></span><span></span>";
+    row.children[0].textContent=sk(t).em+" "+sk(t).n;
+    row.children[1].textContent=x.r[0]+"/"+x.n;row.children[2].textContent=x.r[1]+"/"+x.n;br.appendChild(row);
+  });
+  var hb=$("habit");hb.innerHTML="";
+  [0,1].forEach(function(p){
+    var worst=null,wv=2;
+    Object.keys(tally).forEach(function(t){var v=tally[t].r[p]/tally[t].n;if(v<wv){wv=v;worst=t}});
+    var line=document.createElement("p");line.style.margin="0 0 8px";
+    line.textContent=NAMES[p]+": "+((wv<1&&worst)?("🌱 Practise "+sk(worst).n+". "+sk(worst).tip):"🌟 No weak spot today. Great work!");
+    hb.appendChild(line);
+  });
+  var rev=$("rev");rev.innerHTML="";
+  var miss=state.answers.filter(function(a){return !(a.right[0]&&a.right[1])});
+  if(miss.length){
+    var h2=document.createElement("h2");h2.textContent="Talk about these together";rev.appendChild(h2);
+    var ul=document.createElement("ul");ul.style.cssText="padding-left:22px;margin:0";
+    miss.forEach(function(a){
+      var li=document.createElement("li"),b=document.createElement("b");b.textContent=a.q.q;li.appendChild(b);
+      var who=NAMES.filter(function(_,p){return !a.right[p]}).join(" and ");
+      var s0=document.createElement("small");s0.textContent="Missed by: "+who;li.appendChild(s0);
+      var s1=document.createElement("small");s1.textContent="Right answer: "+a.q.o[a.q.a];li.appendChild(s1);
+      var s2=document.createElement("small");s2.textContent=a.q.e;li.appendChild(s2);ul.appendChild(li);
+    });
+    rev.appendChild(ul);
+  } else {var pp=document.createElement("p");pp.textContent="No mistakes from either of you. Wow!";rev.appendChild(pp)}
+  show("result");
+}
+function finish(){
+  if(state.duo)return finishDuo();
+  var n=state.list.length,s=state.score,p=s/n,got=p>=0.8?3:p>=0.5?2:1;
+  var d=loadD();d.xp[0]+=s;
+  var msg="";
+  if(state.mode==="daily"){
+    if(d.last!==today()){
+      d.streak=(d.last===ds(Date.now()-864e5))?d.streak+1:1;
+      d.last=today();if(d.streak>d.best)d.best=d.streak;
+      msg="🔥 "+d.streak+(d.streak===1?" day streak! Come back tomorrow.":" days in a row. Keep going!");
+    } else msg="You already got today’s streak. This was extra practice!";
+  } else msg="Practice earns stars. Do Today’s Challenge to grow your streak.";
+  saveD(d);
+  $("rtitle").textContent=got===3?"Amazing thinking! 🎉":got===2?"Well done! 👏":"Nice effort! 💪";
+  var st=$("stars");st.innerHTML="";
+  for(var i=1;i<=3;i++){var sp=document.createElement("span");sp.textContent="⭐";if(i>got)sp.className="off";st.appendChild(sp)}
+  $("score").textContent=s+" out of "+n+" right  (+"+s+" ⭐)";
+  $("streakmsg").textContent=msg;
+  var tally={};
+  state.answers.forEach(function(a){var t=a.q.s;tally[t]=tally[t]||{r:0,n:0};tally[t].n++;if(a.right)tally[t].r++});
+  var br=$("break");br.innerHTML="";var worst=null,wv=2;
+  Object.keys(tally).forEach(function(t){
+    var x=tally[t],row=document.createElement("div");row.className="drow";
+    row.innerHTML='<span></span><span></span><span></span>';
+    row.children[0].textContent=sk(t).em+" "+sk(t).n;
+    row.children[1].textContent=x.r+"/"+x.n;row.children[2].textContent="";
+    br.appendChild(row);
+    if(x.r/x.n<wv){wv=x.r/x.n;worst=t}
+  });
+  var hb=$("habit");hb.innerHTML="<b></b><br><span></span>";
+  var key=(wv<1&&worst)?worst:state.answers[0].q.s;
+  hb.children[0].textContent="🌱 Thinking habit to practise: "+sk(key).n;
+  hb.children[2].textContent=sk(key).tip;
+  var miss=state.answers.filter(function(a){return !a.right}),rev=$("rev");rev.innerHTML="";
+  if(miss.length){
+    var h=document.createElement("h2");h.textContent="Learn from these";rev.appendChild(h);
+    var ul=document.createElement("ul");ul.style.cssText="padding-left:22px;margin:0";
+    miss.forEach(function(a){
+      var li=document.createElement("li"),b=document.createElement("b");b.textContent=a.q.q;li.appendChild(b);
+      var s1=document.createElement("small");s1.textContent="Right answer: "+a.q.o[a.q.a];li.appendChild(s1);
+      var s2=document.createElement("small");s2.textContent=a.q.e;li.appendChild(s2);ul.appendChild(li);
+    });
+    rev.appendChild(ul);
+  } else {var pp=document.createElement("p");pp.textContent="No mistakes at all. Wow!";rev.appendChild(pp)}
+  show("result");
+}
+
+$("daily").onclick=function(){start("daily")};
+$("home").onclick=home;
+document.addEventListener("keydown",function(e){
+  if($("quiz").hidden||state.done||state.duo)return;
+  var k=parseInt(e.key,10);if(k>=1&&k<=4)answer(k-1);
+});
+home();
+</script>
+</body>
+</html>
